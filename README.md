@@ -138,3 +138,7 @@ El símbolo de la barra de menú se configura por separado en `toc/MenuBar/MenuB
 ## Atribución
 
 El código original de Magnetism pertenece a sadopc. Se conserva `LICENSE` sin modificaciones y se incluye como recurso de la aplicación. El enlace de la pantalla About identifica explícitamente el proyecto original.
+
+## Contribuir
+
+El repositorio es público y acepta contribuciones: haz un fork, crea una rama y abre un pull request. Quién ha colaborado figura en [CONTRIBUTORS.md](CONTRIBUTORS.md).
