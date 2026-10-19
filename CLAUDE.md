@@ -13,6 +13,12 @@ xcodebuild -project toc.xcodeproj -scheme toc -configuration Debug -derivedDataP
 
 # Run the built app
 open build/Build/Products/Debug/toc.app
+
+# Test (AX responses are simulated, no real windows are moved)
+xcodebuild -project toc.xcodeproj -scheme toc -configuration Debug -derivedDataPath build -destination 'platform=macOS' -parallel-testing-enabled NO -only-testing:tocTests test
+
+# Package a DMG (needs a Release build in build/)
+bash scripts/package-dmg.sh
 ```
 
 **You must run `xcodegen` after creating or deleting any Swift file** — the project.yml sources the entire `toc/` directory, but the .xcodeproj needs regeneration to pick up changes.
@@ -30,28 +36,30 @@ Menu-bar-only macOS window manager (LSUIElement=true, no dock icon). Swift 6 str
 ### Data Flow
 
 ```
-ShortcutManager (onKeyUp)  ──┐
-                              ├──→ WindowManager.execute(WindowAction)
-SnapManager (CGEvent tap)  ──┘         │
-MenuBarManager (NSMenuItem)──┘    ┌────┼────────┐
-                                  ↓    ↓        ↓
-                             .restore .snap  .nextDisplay
-                                  │    │        │
-                           WindowHistory │  ScreenManager
-                                  WindowCalculationFactory
-                                       │
-                                       ↓
-                              AccessibilityElement.animateFrame()
-                              (AX API: position + size via triple-set)
+ShortcutManager (onKeyUp)   ──┐
+MenuBarManager (NSMenuItem) ──┴──→ WindowManager.execute(WindowAction)
+                                        │
+                      ┌─────────────────┼──────────────────┐
+                      ↓                 ↓                  ↓
+                  .restore       .nextDisplay /       layout actions
+                      │          .previousDisplay           │
+               WindowHistory      ScreenManager     WindowCalculationFactory
+                      └─────────────────┼──────────────────┘
+                                        ↓
+SnapManager (CGEvent tap) ──→ WindowManager.executeSnap(SnapZone, window)
+                                        │
+                                        ↓
+                         WindowManager.move → WindowFrameWriter.apply
+                         (AX API via AccessibilityElement: size → position → size)
 ```
 
 ### Key Modules
 
-- **Core/** — `WindowManager` orchestrates everything. `AccessibilityElement` wraps AXUIElement. `WindowAction` enum is the single source of truth for all 18 actions (display names, categories, shortcut bindings via extension in ShortcutNames.swift).
-- **Calculations/** — One struct per layout action, all conforming to `WindowCalculation` protocol. Factory in `WindowCalculation.swift` maps `WindowAction` → calculation.
-- **Shortcuts/** — `ShortcutNames.swift` defines `KeyboardShortcuts.Name` constants with Magnet-compatible defaults. `ShortcutManager` registers `onKeyUp` handlers.
-- **Snapping/** — `SnapManager` uses a passive CGEvent tap (`.listenOnly`). `SnapZoneDetector` checks mouse position against screen edges/corners. `SnapOverlayWindow` shows an animated preview.
-- **Preferences/** — `PreferencesWindowController` hosts SwiftUI views in an AppKit NSWindow (SwiftUI Settings scene is unreliable in LSUIElement apps).
+- **Core/** — `WindowManager` orchestrates everything. `AccessibilityElement` wraps AXUIElement. `WindowFrameWriter` applies a target frame through the `WindowFrameAccess` protocol (so tests can simulate AX) and returns a `Result` with the actual frame or a typed failure. `WindowHistory` keeps up to 128 pre-move frames, in memory only. `WindowAction` enum is the single source of truth for all 23 actions (display names, categories, shortcut bindings via extension in ShortcutNames.swift).
+- **Calculations/** — One struct per layout action, all conforming to `WindowCalculation` protocol. Factory in `WindowCalculation.swift` maps `WindowAction` → calculation. `.restore`, `.nextDisplay` and `.previousDisplay` have no calculation; `WindowManager` handles them directly.
+- **Shortcuts/** — `ShortcutNames.swift` defines `KeyboardShortcuts.Name` constants with Magnet-compatible defaults. The five vertical thirds/two-thirds actions have no default binding. `ShortcutManager` registers `onKeyUp` handlers.
+- **Snapping/** — `SnapManager` uses a passive CGEvent tap (`.listenOnly`) and a 1 s timer that recreates the tap after a permission grant or a timeout. `SnapZone.swift` holds `SnapZone` and `SnapZoneDetector`, which checks the mouse position against screen edges/corners using `WindowPreferences.edgeThreshold`. `SnapOverlayWindow` shows a fading preview.
+- **Preferences/** — `PreferencesWindowController` hosts SwiftUI views in an AppKit NSWindow (SwiftUI Settings scene is unreliable in LSUIElement apps). `Utilities/WindowPreferences.swift` stores the snap sensitivity and the excluded bundle IDs.
 
 ## Critical Technical Patterns
 
@@ -59,23 +67,23 @@ MenuBarManager (NSMenuItem)──┘    ┌────┼───────�
 NSScreen uses bottom-left origin; AX API uses top-left origin. **All** window calculations must use `NSScreen.flippedVisibleFrame` (defined in `CGExtensions.swift`), never raw `visibleFrame`. The overlay window converts back with `CGRect.screenFlipped()` for display.
 
 ### Triple-Set Pattern
-`AccessibilityElement.frame` setter does `setSize → setPosition → setSize`. macOS enforces per-display size limits during cross-display moves — setting size twice ensures the final frame is exact. This pattern also appears at the end of `animateFrame()`.
+`WindowFrameWriter.apply` does `setSize → setPosition → setSize`. macOS enforces per-display size limits during cross-display moves — setting size twice ensures the final frame is exact. It then reads the frame back, pulls the window inside the visible frame if needed, and reports `wasConstrained` when the app refused the requested geometry.
 
-### Animation
-`WindowManager.animateWindow()` is `nonisolated` and dispatches to `DispatchQueue.global(qos: .userInteractive)` because the animation loop uses `Thread.sleep()` in 12 steps with ease-out cubic interpolation. Cross-display moves skip animation (would look wrong flying through dead space).
+### Direct Movement
+Windows move in one synchronous step on the main actor; there is no window animation. Only the snap overlay animates.
 
 ### CGEvent Tap Memory Management
-`SnapManager` passes `self` to the C callback via `Unmanaged.passUnretained()`. The `eventTap` property **must** be held — if it's deallocated, the tap stops working silently.
+`SnapManager` passes `self` to the C callback via `Unmanaged.passUnretained()`. The `eventTap` property **must** be held — if it's deallocated, the tap stops working silently. The callback only copies the event location and dispatches the handling to the main queue.
 
-### Terminal.app Workaround
-`WindowManager.execute()` temporarily disables `AXEnhancedUserInterface` before moving Terminal windows, then re-enables it in a `defer` block.
+### AXEnhancedUserInterface Workaround
+`WindowManager.move()` temporarily disables `AXEnhancedUserInterface` on the window's owning app (needed for Terminal.app, applied to any app that has it enabled), then re-enables it in a `defer` block.
 
-### Private API: `_AXUIElementGetWindow`
-Declared via `@_silgen_name` in `AccessibilityElement.swift` to get `CGWindowID` from an AXUIElement. Used for window history tracking. May break in future macOS versions.
+### No Private API
+`WindowHistory` identifies windows with `CFEqual` on the `AXUIElement` (`AccessibilityElement.isSameWindow(as:)`), not with `CGWindowID`. Do not reintroduce `_AXUIElementGetWindow`.
 
 ## Swift 6 Concurrency Strategy
 
-All singleton managers are `@MainActor final class`. No async/await patterns. The only off-main-thread work is the animation loop in `AccessibilityElement.animateFrame()`.
+All singleton managers are `@MainActor final class`. No async/await patterns. Nothing runs off the main thread except the CGEvent tap callback, which immediately hops to the main queue.
 
 The `kAXTrustedCheckOptionPrompt` global variable triggers a Swift 6 concurrency warning — worked around by using the string literal `"AXTrustedCheckOptionPrompt"` directly in `AccessibilityPermission.swift`.
 
@@ -84,7 +92,7 @@ The `kAXTrustedCheckOptionPrompt` global variable triggers a Swift 6 concurrency
 1. Add a case to `WindowAction` enum (with `displayName` and `category`)
 2. Create `Calculations/[Name]Calculation.swift` conforming to `WindowCalculation`
 3. Add the case to `WindowCalculationFactory.calculation(for:)`
-4. Add a `KeyboardShortcuts.Name` in `ShortcutNames.swift` with a default binding
+4. Add a `KeyboardShortcuts.Name` in `ShortcutNames.swift` (a default binding is optional)
 5. Add the mapping in the `WindowAction.shortcutName` extension
 6. Run `xcodegen` to pick up the new file
 

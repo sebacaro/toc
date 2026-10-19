@@ -28,17 +28,15 @@ Los cinco atajos verticales nuevos no tienen una combinación predeterminada; se
 
 ## Generar y compilar
 
-Requiere Xcode 16 o posterior y XcodeGen. El proyecto de Xcode ya está incluido; ejecuta XcodeGen cuando cambies `project.yml` o agregues, elimines o renombres archivos Swift:
+Requiere Xcode 16 o posterior y XcodeGen. El proyecto de Xcode ya está incluido; ejecuta XcodeGen cuando cambies `project.yml` o agregues, elimines o renombres archivos Swift. Los comandos de esta guía se ejecutan desde la raíz del repositorio:
 
 ```bash
-cd /Users/seba/Documents/PROYECTOS/toc
 xcodegen generate --spec project.yml
 ```
 
 Compilación Release, con los productos dentro del proyecto:
 
 ```bash
-cd /Users/seba/Documents/PROYECTOS/toc
 xcodebuild \
   -project toc.xcodeproj \
   -scheme toc \
@@ -51,13 +49,13 @@ xcodebuild \
   build
 ```
 
-Aplicación resultante: `/Users/seba/Documents/PROYECTOS/toc/build/Build/Products/Release/toc.app`.
+Aplicación resultante: `build/Build/Products/Release/toc.app`.
 
 ## Verificación
 
-Entrega 1.1.2 (build 5): nombre visible **Toc**, con T mayúscula, en Finder, preferencias, mensajes y menú. El DMG distribuye `Toc.app` y se instala en `/Applications/Toc.app`; el target, esquema y Bundle ID conservan sus identificadores técnicos. Se verificaron la compilación Release universal, firma ad hoc, metadatos, suma SHA-256 del DMG y nombre en Finder. Evidencia: `build/logs/name-release-build.log`, `build/logs/name-release-verification.json`, `build/logs/name-installed-verification.json` y `build/logs/name-package-dmg.log`.
+Entrega 1.1.2 (build 5): nombre visible **Toc**, con T mayúscula, en Finder, preferencias, mensajes y menú. El DMG distribuye `Toc.app` y se instala en `/Applications/Toc.app`; el target, esquema y Bundle ID conservan sus identificadores técnicos. Se verificaron la compilación Release universal, firma ad hoc, metadatos, suma SHA-256 del DMG y nombre en Finder.
 
-Entrega 1.1.1 (build 4): icono T morado aprobado, diez variantes compiladas de 16 a 1024 px, Release universal para Intel y Apple Silicon, mínimo macOS 14. Se verificaron firma, versión, icono dentro de la app y del DMG, catálogo de recursos, guía incluida y suma SHA-256. `dist` conserva únicamente `toc.dmg` y `toc.dmg.sha256`; el paquete anterior fue reemplazado. Evidencia: `build/logs/icon-release-build.log`, `build/logs/icon-release-verification.json` y `build/logs/icon-dmg-verification.json`.
+Entrega 1.1.1 (build 4): icono T morado aprobado, diez variantes compiladas de 16 a 1024 px, Release universal para Intel y Apple Silicon, mínimo macOS 14. Se verificaron firma, versión, icono dentro de la app y del DMG, catálogo de recursos, guía incluida y suma SHA-256. `dist` conserva únicamente `toc.dmg` y `toc.dmg.sha256`; el paquete anterior fue reemplazado.
 
 El 18 de octubre de 2026 pasaron 34 pruebas en 7 suites con Xcode 26.2, en Apple Silicon. La versión 1.1.0 (build 3) compiló en Release universal (`arm64` y `x86_64`), con firma ad hoc válida y sin advertencias del compilador Swift. Xcode solo emitió el aviso de extracción omitida de App Intents, que toc no utiliza.
 
@@ -68,7 +66,6 @@ Swift Package Manager fija KeyboardShortcuts en 2.4.0 mediante `toc.xcodeproj/pr
 Para repetir las pruebas:
 
 ```bash
-cd /Users/seba/Documents/PROYECTOS/toc
 xcodebuild \
   -project toc.xcodeproj \
   -scheme toc \
@@ -84,7 +81,7 @@ xcodebuild \
   test
 ```
 
-Registros de la entrega personal: `build/logs/personal-tests.log`, `build/logs/release-build.log` y `build/logs/dmg-verification.json`. Los resultados XCTest se guardan en `build/Logs/Test/`.
+Los resultados XCTest se guardan en `build/Logs/Test/`.
 
 Las pruebas simulan las respuestas AX para no mover ventanas reales. Atajos y arrastre sobre apps reales, cambios de TCC, monitores físicos, Spaces y rendimiento siguen requiriendo validación manual. La firma ad hoc puede obligar a volver a autorizar la copia instalada tras actualizarla.
 
@@ -108,17 +105,16 @@ Si sigue fallando, consulta Preferences → General y el registro de `com.seba.t
 Con la compilación Release disponible, ejecuta el script nativo de empaquetado:
 
 ```bash
-cd /Users/seba/Documents/PROYECTOS/toc
 bash scripts/package-dmg.sh
 ```
 
-Genera `/Users/seba/Documents/PROYECTOS/toc/dist/toc.dmg` y su suma SHA-256 en `dist/toc.dmg.sha256`. Usa `ditto` para copiar la app conservando su firma y `hdiutil` para crear y verificar una imagen HFS+ comprimida y de solo lectura. El DMG contiene `Toc.app`, el enlace `Applications`, `LICENSE` y `LEEME.txt`. Al repetirlo, reemplaza el DMG generado anterior después de verificar la nueva imagen.
+Genera `dist/toc.dmg` y su suma SHA-256 en `dist/toc.dmg.sha256`. Usa `ditto` para copiar la app conservando su firma y `hdiutil` para crear y verificar una imagen HFS+ comprimida y de solo lectura. El DMG contiene `Toc.app`, el enlace `Applications`, `LICENSE` y `LEEME.txt`. Al repetirlo, reemplaza el DMG generado anterior después de verificar la nueva imagen.
 
 El mismo `toc.dmg` sirve para tus otros Macs con macOS 14 o posterior, tanto Intel como Apple Silicon. Para instalar en cada equipo, abre `toc.dmg`, arrastra `Toc.app` a `Applications`, expulsa el disco y abre `/Applications/Toc.app`. No ejecutes la app desde el volumen del DMG. Autoriza la copia instalada en Accesibilidad en **cada Mac**; ese permiso no se transfiere con el instalador.
 
 Al actualizar, cierra Toc antes de reemplazar `/Applications/Toc.app`. Si Accesibilidad aparece activada pero la app deja de mover ventanas, elimina solo su entrada y vuelve a añadir la copia instalada, como se explica arriba. Esto resolvió el permiso ligado a una compilación anterior durante la comprobación manual en el Mac de desarrollo.
 
-Verificación del instalador: la imagen pasó `hdiutil verify`, se montó en modo de solo lectura y se comprobó que contiene los cuatro elementos previstos. La firma de la app copiada es válida y su ejecutable coincide con el Release original. La suma SHA-256 también pasó; la imagen se desmontó al terminar. Registro: `build/logs/dmg-verification.json`.
+Verificación del instalador: la imagen pasó `hdiutil verify`, se montó en modo de solo lectura y se comprobó que contiene los cuatro elementos previstos. La firma de la app copiada es válida y su ejecutable coincide con el Release original. La suma SHA-256 también pasó; la imagen se desmontó al terminar.
 
 ### Gatekeeper y cuarentena
 

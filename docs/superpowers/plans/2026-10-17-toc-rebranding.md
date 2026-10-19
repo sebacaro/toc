@@ -15,7 +15,7 @@
 - App/product/project/shared scheme: `toc`; test target: `tocTests`.
 - Bundle identifiers: `com.seba.toc` and `com.seba.toc.tests`.
 - Keep macOS 14 minimum and existing dependency/version settings.
-- Change only `/Users/seba/Documents/PROYECTOS/toc`; temporary tools may live in `/private/tmp`.
+- Change only the project root; temporary tools may live in `/private/tmp`.
 - Do not access or modify `noira`, its services, or any global configuration.
 - Keep the original MIT license and upstream attribution; bundle the license as a resource.
 - Keep the inherited AppIcon as a temporary icon and document its replacement.
