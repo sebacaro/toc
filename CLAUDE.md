@@ -9,13 +9,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 xcodegen
 
 # Build
-xcodebuild -project Magnetism.xcodeproj -scheme Magnetism -destination 'platform=macOS' build
+xcodebuild -project toc.xcodeproj -scheme toc -configuration Debug -derivedDataPath build -destination 'platform=macOS' build
 
-# Find and run the built app
-open "$(find ~/Library/Developer/Xcode/DerivedData -path '*/Magnetism-*/Build/Products/Debug/Magnetism.app' -maxdepth 5 | head -1)"
+# Run the built app
+open build/Build/Products/Debug/toc.app
 ```
 
-**You must run `xcodegen` after creating or deleting any Swift file** — the project.yml sources the entire `Magnetism/` directory, but the .xcodeproj needs regeneration to pick up changes.
+**You must run `xcodegen` after creating or deleting any Swift file** — the project.yml sources the entire `toc/` directory, but the .xcodeproj needs regeneration to pick up changes.
+
+## Project identity
+
+App, target and shared scheme: `toc`. Tests: `tocTests`. Bundle IDs: `com.seba.toc` and `com.seba.toc.tests`.
+
+This personal project is based on [Magnetism](https://github.com/sadopc/magnetism). Preserve the original MIT license. The approved purple T icon comes from docs/branding/toc-icon-purple-t-v2.png; its macOS sizes are in toc/Assets.xcassets/AppIcon.appiconset/.
 
 ## Architecture
 

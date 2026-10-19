@@ -1,0 +1,84 @@
+INSTALAR TOC
+
+El mismo toc.dmg sirve para Macs Intel y Apple Silicon con macOS 14 o posterior.
+El icono de la app es una T blanca sobre morado, con tres bloques arriba y una
+sola pieza vertical debajo.
+
+1. Abre toc.dmg y arrastra Toc.app al enlace Applications.
+2. Expulsa la imagen de disco.
+3. Abre /Applications/Toc.app. La app aparece en la barra de menú, no en el Dock.
+4. Autoriza Toc en Ajustes del Sistema > Privacidad y seguridad > Accesibilidad.
+   Concede el permiso a la copia instalada en /Applications en CADA Mac.
+   El permiso no se transfiere al copiar la app o el instalador.
+
+No ejecutes Toc desde el volumen del DMG ni abras dos copias a la vez.
+
+ACTUALIZAR Y RECUPERAR ACCESIBILIDAD
+
+Cierra Toc antes de reemplazar /Applications/Toc.app con una versión nueva.
+Al actualizar una copia con firma ad hoc, macOS puede conservar una autorización
+vinculada a la compilación anterior. Si el permiso aparece activado pero no mueve
+ventanas:
+
+1. Cierra todas las copias de Toc.
+2. En Ajustes del Sistema > Privacidad y seguridad > Accesibilidad, selecciona
+   SOLO Toc y pulsa el botón «−».
+3. Pulsa «+», añade /Applications/Toc.app y activa el permiso. Completa tú la
+   autenticación si macOS la solicita.
+4. Abre /Applications/Toc.app. Activa una ventana normal de Finder y elige
+   Left Half en el menú de Toc para comprobar el movimiento.
+
+Este procedimiento resolvió la entrada de una compilación anterior en el Mac
+de desarrollo. No elimines los permisos de otras aplicaciones.
+
+USO
+
+Abre el menú de Toc en la barra superior para ver todos los movimientos.
+Configura los atajos en Preferences > Shortcuts. Las nuevas acciones de tercios
+verticales no tienen un atajo predeterminado.
+
+Arrastra una ventana y suelta al ver la previsualización:
+- Pantalla horizontal: laterales para mitades, esquinas para cuartos y borde
+  superior para maximizar. El borde inferior tiene cinco tramos: tercio izquierdo,
+  dos tercios izquierdos, tercio central, dos tercios derechos y tercio derecho.
+- Pantalla vertical: ambos laterales tienen cinco tramos para tercios y dos
+  tercios verticales. El borde inferior da mitades izquierda/derecha.
+- Las esquinas siempre tienen prioridad sobre los tramos cercanos.
+
+Preferences > General permite ajustar la sensibilidad de borde (1 a 40 puntos)
+y excluir aplicaciones por Bundle ID, uno por línea; por ejemplo com.apple.Safari.
+Las exclusiones afectan al menú, atajos y arrastre. Puedes obtener un Bundle ID:
+mdls -name kMDItemCFBundleIdentifier /Applications/Safari.app
+
+Restore recupera el estado guardado antes del primer cambio de Toc. El historial
+es temporal, limitado a 128 ventanas y se pierde al cerrar Toc. Si una pantalla
+se desconectó, se ajusta a una disponible. Algunas apps imponen un tamaño mínimo;
+Toc conserva el área superior accesible y muestra el límite en Preferences.
+
+Si habilitas Accesibilidad con Toc abierto, el arrastre se reanuda automáticamente.
+
+GATEKEEPER
+
+Esta copia personal tiene firma ad hoc para ejecución local. No tiene firma
+Developer ID ni notarización de Apple.
+
+Si macOS la bloquea por desarrollador no identificado, intenta abrir Toc una vez
+y después ve a Ajustes del Sistema > Privacidad y seguridad > Abrir igualmente.
+Confirma la apertura de esta app.
+
+Si esta copia que tú compilaste tiene el atributo de cuarentena, puedes retirarlo
+solo de Toc desde Terminal y abrirla:
+
+xattr -dr com.apple.quarantine "/Applications/Toc.app"
+open "/Applications/Toc.app"
+
+No hace falta desactivar Gatekeeper globalmente. La autorización de Accesibilidad
+es independiente de Gatekeeper y sigue siendo necesaria para mover ventanas.
+
+Guía oficial de Apple: https://support.apple.com/es-cl/102445
+
+ATRIBUCIÓN
+
+Toc está basado en Magnetism, de sadopc, bajo licencia MIT.
+Repositorio original: https://github.com/sadopc/magnetism
+La licencia original se incluye en este disco y dentro de Toc.app.

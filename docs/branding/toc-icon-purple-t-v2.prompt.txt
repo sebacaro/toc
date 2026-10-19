@@ -1,0 +1,7 @@
+Edited with the built-in image_gen tool on 2026-10-18.
+Base: toc-icon-purple-t-v1.png. Change: join the two lower panels into one vertical rectangle.
+
+Edit the FULL purple toc application icon in reference image 1. Reference image 2 is a cropped detail indicating ONLY the two vertically stacked white squares forming the lower stem of the T.
+Make exactly one change: JOIN THOSE TWO LOWER SQUARE PANELS into ONE continuous tall white rounded rectangle, filling the horizontal purple gap between them. Its left and right edges must stay exactly aligned with the existing stem. Keep the same outer top edge, outer bottom edge, width, white material, modest corner radius and subtle shadow; remove the internal seam entirely.
+Keep the three separate white square panels across the TOP of the T exactly unchanged. Preserve the purple gap between the center top square and the new tall stem. The resulting T has THREE top squares and ONE tall lower rectangle (four panels total).
+Preserve EVERYTHING ELSE from the full icon: composition, dimensions, purple rounded-square background, circular inset, lavender rim lighting, all colors, spacing, positions and style. Do not redesign or shift anything. Deliver the complete square icon, not the cropped detail, no text, no mockup, transparent outside the purple rounded tile.

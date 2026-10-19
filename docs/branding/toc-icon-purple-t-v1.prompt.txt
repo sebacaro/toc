@@ -1,0 +1,11 @@
+Generated with the built-in image_gen tool on 2026-10-18.
+Reference inputs: user-provided Magnet icon and purple T icon screenshots.
+Output: toc-icon-purple-t-v1.png (concept proposal).
+
+Use case: logo-brand.
+Create ONE finished macOS application icon for the personal window manager "toc", square 1024 × 1024, front view, no perspective.
+Reference image 1 (blue Magnet icon) supplies the disciplined layout: precise symmetry, clean rectangular window panels, straight uniform gutters, restrained dimensional depth and centered circular inset.
+Reference image 2 (purple T icon) supplies the identity: deep purple rounded-square tile, softly luminous lavender circular inset, and a WHITE CAPITAL T MADE OF FIVE WINDOW PANELS.
+Combine those qualities into a distinct toc icon. The T must be much more orderly than image 2: five identical white rounded-square panels, three perfectly aligned across the top, then two stacked directly under the middle top panel. All five panels have exactly the same dimensions and same modest corner radius. All gutters between panels are exactly the same width, perfectly straight horizontal/vertical negative space, with no interlocking, slanted or wavy joints. This is a geometric T assembled from window tiles, not a typed letter. Keep this five-panel T bold, balanced, centered and immediately legible at small icon sizes.
+The outer squircle has the deep eggplant/purple family of image 2, subtle rich violet shading, smooth macOS-style corners. A centered circular inset behind the T has a soft lavender rim, gentle recessed depth and quieter glow than image 2, borrowing the orderly circular relief of image 1. Matte/satin finish, clean edges, subtle coherent highlights and shadows. White panels have only restrained depth; strong white-on-purple contrast.
+Single icon only, large and centered, minimal equal canvas margin; outside the rounded tile is genuinely transparent, including the four canvas corners. No white background, no ground plane, no mockup, no extra variants, no text labels, no app name lettering, no thumbs-up/down buttons, no screenshot interface, no badges or watermark. Preserve the purple mood and distinctive T from image 2, while making the geometry as precise and uncluttered as image 1.
